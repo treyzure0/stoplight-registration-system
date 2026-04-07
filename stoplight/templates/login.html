@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Stoplight Registration System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-mark">
+        <div class="logo-dot-row">
+          <div class="logo-dot dot-r"></div>
+          <div class="logo-dot dot-a"></div>
+          <div class="logo-dot dot-g"></div>
+        </div>
+      </div>
+      <span class="sys-name">Stoplight System</span>
+      <span class="sys-sub">Registration Portal</span>
+    </div>
+
+    <h2>Authorized Access Only</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'error' if cat=='error' else cat }}" style="margin-bottom:14px;">
+        <span>{{ msg }}</span>
+      </div>
+      {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label for="username">Username <span class="req">*</span></label>
+        <input type="text" id="username" name="username" placeholder="Enter username"
+               required autofocus autocomplete="username">
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label for="password">Password <span class="req">*</span></label>
+        <input type="password" id="password" name="password" placeholder="Enter password"
+               required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-navy btn-lg">Sign In to System</button>
+    </form>
+
+    <div class="login-footer">
+      Stoplight Registration System &mdash; Director Grade Platform<br>
+      Unauthorized access is strictly prohibited.
+    </div>
+  </div>
+</body>
+</html>

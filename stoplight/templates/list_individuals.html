@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Individuals — Stoplight{% endblock %}
+{% block page_title %}Individuals{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>All Individuals</h1>
+    <p>{{ individuals|length }} individual(s) registered</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('register_individual') }}" class="btn btn-primary btn-sm">Register Individual</a>
+    <a href="{{ url_for('print_individuals') }}" class="btn btn-navy btn-sm" target="_blank">Print List</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Individual Registry</span>
+    <form method="GET" class="search-bar" style="margin:0;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search by name or occupation...">
+      <button type="submit" class="btn btn-navy btn-sm">Search</button>
+      {% if q %}<a href="{{ url_for('list_individuals') }}" class="btn btn-outline btn-sm">Clear</a>{% endif %}
+    </form>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if individuals %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Unique ID</th>
+            <th>Full Name</th>
+            <th>Occupation</th>
+            <th>Area of Residence</th>
+            <th>Date of Birth</th>
+            <th>Phone</th>
+            <th>ID Card</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ind in individuals %}
+          <tr>
+            <td><span class="td-mono">{{ ind.unique_id }}</span></td>
+            <td class="fw-700">{{ ind.full_name }}</td>
+            <td>{{ ind.occupation or '—' }}</td>
+            <td>{{ ind.area_of_residence or '—' }}</td>
+            <td class="text-muted" style="font-size:.78rem;">{{ ind.date_of_birth.strftime('%d %b %Y') if ind.date_of_birth else '—' }}</td>
+            <td>{{ ind.phone or '—' }}</td>
+            <td>
+              <div class="d-flex gap-8">
+                <a href="{{ url_for('view_id_card', category='individual', record_id=ind.id) }}" class="btn btn-outline btn-sm">View</a>
+                <a href="{{ url_for('download_id_card_pdf', category='individual', record_id=ind.id) }}" class="btn btn-navy btn-sm">PDF</a>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="openModal('ind-del-{{ ind.id }}')">Delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="es-title">No Individuals Registered</div>
+      <p>{% if q %}No individuals match "{{ q }}".{% else %}Register individuals to see them here.{% endif %}</p>
+      <a href="{{ url_for('register_individual') }}" class="btn btn-primary btn-sm">Register Individual</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Per-individual delete modals -->
+{% for ind in individuals %}
+<div class="modal-overlay" id="ind-del-{{ ind.id }}">
+  <div class="modal-box">
+    <h3>Delete Individual</h3>
+    <p>You are about to permanently delete:<br>
+      <span class="modal-name">{{ ind.full_name }}</span>{% if ind.occupation %} &mdash; {{ ind.occupation }}{% endif %}
+      ({{ ind.unique_id }})
+    </p>
+    <div class="modal-warning">This action cannot be undone. All associated data and QR codes will be removed.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('ind-del-{{ ind.id }}')">Cancel</button>
+      <form method="POST" action="{{ url_for('delete_individual', ind_id=ind.id) }}" style="margin:0;">
+        <button type="submit" class="btn btn-danger btn-sm">Confirm Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+</script>
+{% endblock %}

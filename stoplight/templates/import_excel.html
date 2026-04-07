@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Excel Import — Stoplight{% endblock %}
+{% block page_title %}Excel Import{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Excel Import</h1>
+    <p>Bulk-import registrations from an Excel file (.xlsx)</p>
+  </div>
+</div>
+
+<div class="card" style="max-width:640px;">
+  <div class="card-header"><span class="card-title">Upload Excel File</span></div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('import_excel') }}" enctype="multipart/form-data">
+      <div class="form-group" style="margin-bottom:20px;">
+        <label for="file">Select Excel File (.xlsx) <span class="req">*</span></label>
+        <input type="file" id="file" name="file" accept=".xlsx,.xls" required>
+        <span class="form-hint">Name your sheet tabs: "Individuals", "Schools", "Families", or "Organizations"</span>
+      </div>
+      <button type="submit" class="btn btn-primary">Upload &amp; Preview</button>
+    </form>
+
+    <hr class="divider">
+
+    <div class="form-section-title">Expected Column Names</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;">
+      <div>
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue);margin-bottom:6px;">Individuals Sheet</div>
+        <div class="pill pill-gray" style="display:block;margin-bottom:4px;font-size:.7rem;">Full Name</div>
+        <div class="pill pill-gray" style="display:block;margin-bottom:4px;font-size:.7rem;">Occupation</div>
+        <div class="pill pill-gray" style="display:block;margin-bottom:4px;font-size:.7rem;">Date of Birth</div>
+        <div class="pill pill-gray" style="display:block;margin-bottom:4px;font-size:.7rem;">Area of Residence</div>
+        <div class="pill pill-gray" style="display:block;font-size:.7rem;">Phone</div>
+      </div>
+      <div>
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--green);margin-bottom:6px;">Schools Sheet</div>
+        <div class="pill pill-gray" style="display:block;margin-bottom:4px;font-size:.7rem;">School Name</div>
+        <div class="pill pill-gray" style="display:block;margin-bottom:4px;font-size:.7rem;">Full Name</div>
+        <div class="pill pill-gray" style="display:block;margin-bottom:4px;font-size:.7rem;">Role</div>
+        <div class="pill pill-gray" style="display:block;margin-bottom:4px;font-size:.7rem;">Area of Residence</div>
+        <div class="pill pill-gray" style="display:block;font-size:.7rem;">Location</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}ID Card — {{ record.full_name }}{% endblock %}
+{% block page_title %}ID Card{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>ID Card — {{ record.full_name }}</h1>
+    <p>{{ cat_name }}{% if group %} &mdash; {{ group }}{% endif %} &mdash; {{ record.unique_id }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('download_id_card_pdf', category=category, record_id=record.id) }}" class="btn btn-primary">Download PDF</a>
+    <button class="btn btn-navy" onclick="window.print()">Print</button>
+  </div>
+</div>
+
+<div class="id-card-wrap">
+  <div class="id-card">
+    <div class="id-card-header">
+      {% if logo_b64 %}
+      <img src="data:image/png;base64,{{ logo_b64 }}" style="height:38px;margin-bottom:6px;border-radius:4px;">
+      {% endif %}
+      <div class="org-name">{{ company }}</div>
+      <div class="card-type">Official Identity Card</div>
+    </div>
+
+    <div class="id-card-body">
+      {% if qr_img_b64 %}
+      <div class="id-card-qr">
+        <img src="data:image/png;base64,{{ qr_img_b64 }}" alt="QR Code">
+      </div>
+      {% endif %}
+
+      <div class="id-card-name">{{ record.full_name }}</div>
+
+      <div class="id-card-role">
+        {% if category == 'school' %}{{ record.custom_role or record.role }}
+        {% elif category == 'family' %}{{ record.role }}
+        {% elif category == 'org' %}{{ record.role or 'Member' }}
+        {% elif category == 'individual' %}{{ record.occupation or 'Individual' }}
+        {% endif %}
+      </div>
+
+      {% if group %}
+      <div class="id-card-group">{{ cat_name }}: {{ group }}</div>
+      {% endif %}
+
+      <div class="id-card-id">{{ record.unique_id }}</div>
+    </div>
+
+    <div class="id-card-footer">
+      <div class="id-card-sig">
+        <div class="sig-line"></div>
+        Authorized Signature
+      </div>
+      <div style="text-align:right;font-size:.65rem;color:var(--gray-md);">
+        {{ cat_name }}<br>Registered
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

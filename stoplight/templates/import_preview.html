@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Import Preview — Stoplight{% endblock %}
+{% block page_title %}Import Preview{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Import Preview</h1>
+    <p>Review the data before confirming import: {{ filename }}</p>
+  </div>
+</div>
+
+{% for sheet, data in preview.items() %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Sheet: {{ sheet }}</span>
+    <span class="pill pill-blue">{{ data.total }} rows total &mdash; showing first 5</span>
+  </div>
+  <div class="card-body preview-table-wrap" style="padding:0;">
+    <table>
+      <thead>
+        <tr>
+          {% for col in data.columns %}
+          <th>{{ col }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data.rows %}
+        <tr>
+          {% for cell in row %}
+          <td>{{ cell }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endfor %}
+
+<div class="d-flex gap-8 mt-16">
+  <a href="{{ url_for('import_excel') }}" class="btn btn-outline">Cancel &amp; Re-upload</a>
+  <form method="POST" action="{{ url_for('import_confirm') }}" style="margin:0;">
+    <button type="submit" class="btn btn-primary btn-lg">Confirm Import to Database</button>
+  </form>
+</div>
+{% endblock %}

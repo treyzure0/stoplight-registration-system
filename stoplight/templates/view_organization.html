@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ org.name }} — Stoplight{% endblock %}
+{% block page_title %}Organization Detail{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>{{ org.name }}</h1>
+    <p><span class="td-mono">{{ org.unique_id }}</span>{% if org.area_of_residence %} &mdash; {{ org.area_of_residence }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('register_organization') }}" class="btn btn-success btn-sm">Add Members</a>
+    {% if current_user.is_admin %}
+    <button class="btn btn-danger btn-sm" onclick="openModal('org-delete-modal')">Delete Organization</button>
+    {% endif %}
+    <a href="{{ url_for('list_organizations') }}" class="btn btn-outline btn-sm">Back</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Members</span>
+    <span class="text-muted" style="font-size:.78rem;">{{ members|length }} total</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if members %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Member ID</th>
+            <th>Full Name</th>
+            <th>Role</th>
+            <th>Area of Residence</th>
+            <th>Phone</th>
+            <th>ID Card</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in members %}
+          <tr>
+            <td><span class="td-mono">{{ m.unique_id }}</span></td>
+            <td class="fw-700">{{ m.full_name }}</td>
+            <td>{{ m.role or '—' }}</td>
+            <td>{{ m.area_of_residence or '—' }}</td>
+            <td>{{ m.phone or '—' }}</td>
+            <td>
+              <div class="d-flex gap-8">
+                <a href="{{ url_for('view_id_card', category='org', record_id=m.id) }}" class="btn btn-outline btn-sm">View</a>
+                <a href="{{ url_for('download_id_card_pdf', category='org', record_id=m.id) }}" class="btn btn-navy btn-sm">PDF</a>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="openModal('om-del-{{ m.id }}')">Delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="es-title">No Members Yet</div></div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Per-member delete modals -->
+{% for m in members %}
+<div class="modal-overlay" id="om-del-{{ m.id }}">
+  <div class="modal-box">
+    <h3>Delete Member</h3>
+    <p>You are about to permanently delete:<br>
+      <span class="modal-name">{{ m.full_name }}</span>{% if m.role %} &mdash; {{ m.role }}{% endif %} ({{ m.unique_id }})
+    </p>
+    <div class="modal-warning">This action cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('om-del-{{ m.id }}')">Cancel</button>
+      <form method="POST" action="{{ url_for('delete_org_member', member_id=m.id) }}" style="margin:0;">
+        <button type="submit" class="btn btn-danger btn-sm">Confirm Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Delete entire org modal -->
+{% if current_user.is_admin %}
+<div class="modal-overlay" id="org-delete-modal">
+  <div class="modal-box">
+    <h3>Delete Organization</h3>
+    <p>You are about to permanently delete <span class="modal-name">{{ org.name }}</span>
+    and all <strong>{{ members|length }}</strong> member record(s).</p>
+    <div class="modal-warning">WARNING: This cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('org-delete-modal')">Cancel</button>
+      <form method="POST" action="{{ url_for('delete_organization', org_id=org.id) }}" style="margin:0;">
+        <button type="submit" class="btn btn-danger">Delete Organization &amp; All Members</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+</script>
+{% endblock %}

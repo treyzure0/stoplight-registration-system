@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Individual Registration — Stoplight{% endblock %}
+{% block page_title %}Individual Registration{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Individual Registration</h1>
+    <p>Register a single person not linked to a school, family, or organization</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('list_individuals') }}" class="btn btn-outline btn-sm">View All Individuals</a>
+  </div>
+</div>
+
+<div class="card" style="max-width:700px;">
+  <div class="card-header">
+    <span class="card-title">Individual Details</span>
+  </div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('register_individual') }}" id="indForm">
+      <div class="form-grid">
+
+        <div class="form-group span-2">
+          <label for="full_name">Full Name <span class="req">*</span></label>
+          <input type="text" id="full_name" name="full_name" placeholder="First Middle Surname"
+                 required oninput="checkDup(this.value)">
+          <span id="dup_warn" class="form-hint text-red" style="display:none;">
+            A person with this name may already be registered.
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="occupation">Occupation</label>
+          <input type="text" id="occupation" name="occupation" placeholder="e.g. Teacher, Farmer, Nurse">
+        </div>
+
+        <div class="form-group">
+          <label for="date_of_birth">Date of Birth</label>
+          <input type="date" id="date_of_birth" name="date_of_birth">
+        </div>
+
+        <div class="form-group span-2">
+          <label for="area_of_residence">Area of Residence <span class="req">*</span></label>
+          <input type="text" id="area_of_residence" name="area_of_residence"
+                 placeholder="Village, Town, District" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="+256...">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="email@example.com">
+        </div>
+
+      </div>
+
+      <hr class="divider">
+      <div class="d-flex gap-8" style="justify-content:flex-end;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary">Register Individual</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let dupTimeout;
+function checkDup(val) {
+  clearTimeout(dupTimeout);
+  if (!val.trim()) { document.getElementById('dup_warn').style.display = 'none'; return; }
+  dupTimeout = setTimeout(() => {
+    fetch(`/api/check-duplicate?name=${encodeURIComponent(val)}&category=individual`)
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('dup_warn').style.display = d.duplicate ? '' : 'none';
+      });
+  }, 500);
+}
+</script>
+{% endblock %}

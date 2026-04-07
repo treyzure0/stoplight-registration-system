@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Family Registration — Stoplight{% endblock %}
+{% block page_title %}Family Registration{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Family Registration</h1>
+    <p>Register family units — father, mother, children, and extended members</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('list_families') }}" class="btn btn-outline btn-sm">View All Families</a>
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('register_family') }}" id="familyForm">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Step 1 — Family Identification</span>
+    </div>
+    <div class="card-body">
+      <div class="toggle-options" style="max-width:360px; margin-bottom:20px;">
+        <input type="radio" name="action" id="fopt_new" value="new" checked onchange="toggleFamilyMode('new')">
+        <label for="fopt_new">New Family</label>
+        <input type="radio" name="action" id="fopt_existing" value="existing" onchange="toggleFamilyMode('existing')">
+        <label for="fopt_existing">Existing Family</label>
+      </div>
+
+      <div id="new_family_fields">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="family_name">Family Name <span class="req">*</span></label>
+            <input type="text" id="family_name" name="family_name"
+                   placeholder="Derived from father's surname, e.g. Mugisha">
+            <span class="form-hint">The family will be named after the father's surname.</span>
+          </div>
+          <div class="form-group">
+            <label for="family_area">Family Area of Residence</label>
+            <input type="text" id="family_area" name="family_area" placeholder="Village, Town, District">
+          </div>
+        </div>
+      </div>
+
+      <div id="existing_family_fields" style="display:none;">
+        <div class="form-group" style="max-width:440px;">
+          <label for="family_id">Select Family <span class="req">*</span></label>
+          <select name="family_id" id="family_id">
+            <option value="">-- Choose a Family --</option>
+            {% for fam in families %}
+            <option value="{{ fam.id }}">{{ fam.family_name }} Family{% if fam.area_of_residence %} — {{ fam.area_of_residence }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Step 2 — Family Members</span>
+      <button type="button" class="btn btn-success btn-sm" onclick="addFamilyMember()">Add Member</button>
+    </div>
+    <div class="card-body">
+      <div class="member-rows" id="familyMemberRows">
+        <!-- Father (row 0) -->
+        <div class="member-row" id="frow_0">
+          <div class="member-row-header">
+            <span class="member-row-title">Member 1 — Father</span>
+            <button type="button" class="remove-row" onclick="removeFRow(0)" style="visibility:hidden;">Remove</button>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Full Name <span class="req">*</span></label>
+              <input type="text" name="member_name[]" placeholder="Father's full name">
+            </div>
+            <div class="form-group">
+              <label>Role <span class="req">*</span></label>
+              <select name="member_role[]">
+                <option value="Father" selected>Father</option>
+                <option value="Mother">Mother</option>
+                <option value="Child">Child</option>
+                <option value="Uncle">Uncle</option>
+                <option value="Aunt">Aunt</option>
+                <option value="Grandmother">Grandmother</option>
+                <option value="Grandfather">Grandfather</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Area of Residence</label>
+              <input type="text" name="member_area[]" placeholder="Village/Town">
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" name="member_dob[]">
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" name="member_phone[]" placeholder="+256...">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-8" style="justify-content:flex-end; margin-top:4px;">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Cancel</a>
+    <button type="submit" class="btn btn-primary btn-lg">Save Family Registration</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let fRowCount = 1;
+
+function toggleFamilyMode(mode) {
+  document.getElementById('new_family_fields').style.display = mode === 'new' ? '' : 'none';
+  document.getElementById('existing_family_fields').style.display = mode === 'existing' ? '' : 'none';
+  document.getElementById('family_name').required = (mode === 'new');
+  document.getElementById('family_id').required = (mode === 'existing');
+}
+
+const FAMILY_ROLES = ['Father','Mother','Child','Uncle','Aunt','Grandmother','Grandfather','Other'];
+
+function addFamilyMember() {
+  const idx = fRowCount++;
+  const container = document.getElementById('familyMemberRows');
+  const row = document.createElement('div');
+  row.className = 'member-row';
+  row.id = `frow_${idx}`;
+  const opts = FAMILY_ROLES.map(r => `<option value="${r}">${r}</option>`).join('');
+  row.innerHTML = `
+    <div class="member-row-header">
+      <span class="member-row-title">Member ${idx + 1}</span>
+      <button type="button" class="remove-row" onclick="removeFRow(${idx})">Remove</button>
+    </div>
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" name="member_name[]" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select name="member_role[]">${opts}</select>
+      </div>
+      <div class="form-group">
+        <label>Area of Residence</label>
+        <input type="text" name="member_area[]" placeholder="Village/Town">
+      </div>
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <input type="date" name="member_dob[]">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" name="member_phone[]" placeholder="+256...">
+      </div>
+    </div>`;
+  container.appendChild(row);
+  document.querySelector('#frow_0 .remove-row').style.visibility = 'visible';
+}
+
+function removeFRow(idx) {
+  const row = document.getElementById(`frow_${idx}`);
+  if (row) row.remove();
+  const rows = document.querySelectorAll('.member-row');
+  if (rows.length === 1) rows[0].querySelector('.remove-row').style.visibility = 'hidden';
+}
+</script>
+{% endblock %}

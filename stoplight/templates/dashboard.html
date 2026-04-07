@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Stoplight{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Operations Dashboard</h1>
+    <p>Real-time overview of all registrations and system activity</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('register_school') }}" class="btn btn-primary btn-sm">New School</a>
+    <a href="{{ url_for('register_family') }}" class="btn btn-success btn-sm">New Family</a>
+    <a href="{{ url_for('register_individual') }}" class="btn btn-navy btn-sm">New Individual</a>
+  </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="stat-grid">
+  <div class="stat-card blue">
+    <div class="stat-label">Total Schools</div>
+    <div class="stat-value">{{ stats.total_schools }}</div>
+    <div class="stat-sub">Registered institutions</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-label">Total Students</div>
+    <div class="stat-value">{{ stats.total_students }}</div>
+    <div class="stat-sub">Enrolled students</div>
+  </div>
+  <div class="stat-card navy">
+    <div class="stat-label">Total Families</div>
+    <div class="stat-value">{{ stats.total_families }}</div>
+    <div class="stat-sub">Family units</div>
+  </div>
+  <div class="stat-card amber">
+    <div class="stat-label">Organizations</div>
+    <div class="stat-value">{{ stats.total_orgs }}</div>
+    <div class="stat-sub">Registered bodies</div>
+  </div>
+  <div class="stat-card teal">
+    <div class="stat-label">Individuals</div>
+    <div class="stat-value">{{ stats.total_indiv }}</div>
+    <div class="stat-sub">Individual registrants</div>
+  </div>
+  <div class="stat-card blue">
+    <div class="stat-label">Total People</div>
+    <div class="stat-value">{{ stats.total_people }}</div>
+    <div class="stat-sub">All registered persons</div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="charts-grid">
+
+  <!-- Pie Chart: Category Distribution -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Category Distribution</span>
+      <span class="pill pill-blue">Pie Chart</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bar Chart: Daily Registrations -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Daily Registrations (30 Days)</span>
+      <span class="pill pill-green">Bar Chart</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Line Chart: Growth Trend -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Registration Growth Trend</span>
+      <span class="pill pill-navy">Line Chart</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Schools -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Top Schools by Population</span>
+      <span class="pill pill-amber">Bar Chart</span>
+    </div>
+    <div class="card-body">
+      {% if stats.top_schools %}
+      <div class="chart-container">
+        <canvas id="schoolChart"></canvas>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="es-title">No School Data Yet</div>
+        <p>Register schools to see this chart.</p>
+        <a href="{{ url_for('register_school') }}" class="btn btn-primary btn-sm">Register School</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- RECENT REGISTRATIONS TABLE -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Recent Registrations</span>
+    <span class="text-muted" style="font-size:.78rem;">Last 10 entries</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if stats.recent %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Unique ID</th>
+            <th>Full Name</th>
+            <th>Category</th>
+            <th>Role / Occupation</th>
+            <th>Area of Residence</th>
+            <th>Registered</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in stats.recent %}
+          <tr>
+            <td><span class="td-mono">{{ r.uid }}</span></td>
+            <td class="fw-700">{{ r.name }}</td>
+            <td>
+              <span class="pill {% if r.category=='School' %}pill-blue{% elif r.category=='Family' %}pill-green{% elif r.category=='Organization' %}pill-amber{% else %}pill-gray{% endif %}">
+                {{ r.category }}
+              </span>
+            </td>
+            <td>{{ r.role }}</td>
+            <td>{{ r.area or '—' }}</td>
+            <td class="text-muted" style="font-size:.78rem;">{{ r.date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="es-title">No Registrations Yet</div>
+      <p>Start by registering schools, families, organizations, or individuals.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const catData = {{ stats.category_data | tojson }};
+const dailyData = {{ stats.daily_regs | tojson }};
+const topSchools = {{ stats.top_schools | tojson }};
+
+const COLORS = {
+  blue:   '#1b6ca8',
+  green:  '#1a7a4a',
+  navy:   '#0a2342',
+  amber:  '#d4811a',
+  teal:   '#0e7490',
+  ltBlue: 'rgba(27,108,168,.15)',
+  ltGreen:'rgba(26,122,74,.15)'
+};
+
+// Pie Chart
+new Chart(document.getElementById('pieChart'), {
+  type: 'pie',
+  data: {
+    labels: Object.keys(catData),
+    datasets: [{
+      data: Object.values(catData),
+      backgroundColor: [COLORS.blue, COLORS.green, COLORS.amber, COLORS.teal],
+      borderColor: '#fff',
+      borderWidth: 2,
+      hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { font: { family: 'Barlow', size: 12 }, padding: 14 } }
+    }
+  }
+});
+
+// Bar Chart (daily regs)
+new Chart(document.getElementById('barChart'), {
+  type: 'bar',
+  data: {
+    labels: dailyData.map(d => d.date),
+    datasets: [{
+      label: 'Registrations',
+      data: dailyData.map(d => d.count),
+      backgroundColor: COLORS.blue,
+      borderRadius: 4,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { display: false } },
+      y: { beginAtZero: true, ticks: { precision: 0 } }
+    }
+  }
+});
+
+// Line Chart (cumulative growth)
+let cumulative = 0;
+const cumData = dailyData.map(d => { cumulative += d.count; return cumulative; });
+new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels: dailyData.map(d => d.date),
+    datasets: [{
+      label: 'Total Registrations',
+      data: cumData,
+      borderColor: COLORS.green,
+      backgroundColor: COLORS.ltGreen,
+      tension: 0.35,
+      fill: true,
+      pointRadius: 3,
+      pointBackgroundColor: COLORS.green
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { display: false } },
+      y: { beginAtZero: true }
+    }
+  }
+});
+
+// Top Schools Chart
+{% if stats.top_schools %}
+new Chart(document.getElementById('schoolChart'), {
+  type: 'bar',
+  data: {
+    labels: topSchools.map(s => s[0]),
+    datasets: [{
+      label: 'Members',
+      data: topSchools.map(s => s[1]),
+      backgroundColor: [COLORS.navy, COLORS.blue, COLORS.teal, COLORS.green, COLORS.amber],
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, ticks: { precision: 0 } },
+      y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+{% endif %}
+</script>
+{% endblock %}

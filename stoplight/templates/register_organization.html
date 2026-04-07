@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Organization Registration — Stoplight{% endblock %}
+{% block page_title %}Organization Registration{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Organization Registration</h1>
+    <p>Register organizations and their members</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('list_organizations') }}" class="btn btn-outline btn-sm">View All Organizations</a>
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('register_organization') }}" id="orgForm">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Step 1 — Organization Details</span>
+    </div>
+    <div class="card-body">
+      <div class="toggle-options" style="max-width:360px; margin-bottom:20px;">
+        <input type="radio" name="action" id="oopt_new" value="new" checked onchange="toggleOrgMode('new')">
+        <label for="oopt_new">New Organization</label>
+        <input type="radio" name="action" id="oopt_existing" value="existing" onchange="toggleOrgMode('existing')">
+        <label for="oopt_existing">Existing Organization</label>
+      </div>
+
+      <div id="new_org_fields">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="org_name">Organization Name <span class="req">*</span></label>
+            <input type="text" id="org_name" name="org_name" placeholder="e.g. Kampala Business Association">
+          </div>
+          <div class="form-group">
+            <label for="org_area">Area of Residence / Location</label>
+            <input type="text" id="org_area" name="org_area" placeholder="Town, District">
+          </div>
+        </div>
+      </div>
+
+      <div id="existing_org_fields" style="display:none;">
+        <div class="form-group" style="max-width:440px;">
+          <label for="org_id">Select Organization <span class="req">*</span></label>
+          <select name="org_id" id="org_id">
+            <option value="">-- Choose an Organization --</option>
+            {% for org in orgs %}
+            <option value="{{ org.id }}">{{ org.name }}{% if org.area_of_residence %} — {{ org.area_of_residence }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Step 2 — Members</span>
+      <button type="button" class="btn btn-success btn-sm" onclick="addOrgMember()">Add Member</button>
+    </div>
+    <div class="card-body">
+      <div class="member-rows" id="orgMemberRows">
+        <div class="member-row" id="orow_0">
+          <div class="member-row-header">
+            <span class="member-row-title">Member 1</span>
+            <button type="button" class="remove-row" onclick="removeORow(0)" style="visibility:hidden;">Remove</button>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Full Name <span class="req">*</span></label>
+              <input type="text" name="member_name[]" placeholder="Full name">
+            </div>
+            <div class="form-group">
+              <label>Role in Organization</label>
+              <input type="text" name="member_role[]" placeholder="e.g. Chairman, Secretary">
+            </div>
+            <div class="form-group">
+              <label>Area of Residence <span class="req">*</span></label>
+              <input type="text" name="member_area[]" placeholder="Town/Village">
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" name="member_phone[]" placeholder="+256...">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-8" style="justify-content:flex-end; margin-top:4px;">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Cancel</a>
+    <button type="submit" class="btn btn-primary btn-lg">Save Organization</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let oRowCount = 1;
+
+function toggleOrgMode(mode) {
+  document.getElementById('new_org_fields').style.display = mode === 'new' ? '' : 'none';
+  document.getElementById('existing_org_fields').style.display = mode === 'existing' ? '' : 'none';
+  document.getElementById('org_name').required = (mode === 'new');
+  document.getElementById('org_id').required = (mode === 'existing');
+}
+
+function addOrgMember() {
+  const idx = oRowCount++;
+  const container = document.getElementById('orgMemberRows');
+  const row = document.createElement('div');
+  row.className = 'member-row';
+  row.id = `orow_${idx}`;
+  row.innerHTML = `
+    <div class="member-row-header">
+      <span class="member-row-title">Member ${idx + 1}</span>
+      <button type="button" class="remove-row" onclick="removeORow(${idx})">Remove</button>
+    </div>
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" name="member_name[]" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label>Role in Organization</label>
+        <input type="text" name="member_role[]" placeholder="e.g. Chairman, Secretary">
+      </div>
+      <div class="form-group">
+        <label>Area of Residence <span class="req">*</span></label>
+        <input type="text" name="member_area[]" placeholder="Town/Village">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" name="member_phone[]" placeholder="+256...">
+      </div>
+    </div>`;
+  container.appendChild(row);
+  document.querySelector('#orow_0 .remove-row').style.visibility = 'visible';
+}
+
+function removeORow(idx) {
+  const row = document.getElementById(`orow_${idx}`);
+  if (row) row.remove();
+  const rows = document.querySelectorAll('.member-row');
+  if (rows.length === 1) rows[0].querySelector('.remove-row').style.visibility = 'hidden';
+}
+</script>
+{% endblock %}

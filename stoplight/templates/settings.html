@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Settings — Stoplight{% endblock %}
+{% block page_title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>System Settings</h1>
+    <p>Manage company information, logo, and user accounts</p>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+  <!-- Company Settings -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">Company Information</span></div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('settings') }}" enctype="multipart/form-data">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label for="company_name">Organization / Company Name</label>
+          <input type="text" id="company_name" name="company_name" value="{{ company }}">
+        </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label for="logo">Upload Logo (PNG or JPG)</label>
+          <input type="file" id="logo" name="logo" accept=".png,.jpg,.jpeg">
+          {% if logo_path %}
+          <span class="form-hint text-green">Logo is currently set.</span>
+          {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add User -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">Add New User</span></div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('add_user') }}">
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Full Name</label>
+          <input type="text" name="full_name" placeholder="Full name">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Username <span class="req">*</span></label>
+          <input type="text" name="username" placeholder="Unique username" required>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Role</label>
+          <select name="role">
+            <option value="staff">Staff</option>
+            <option value="superadmin">Super Admin</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label>Password</label>
+          <input type="text" name="password" placeholder="Leave blank to auto-generate">
+          <span class="form-hint">A strong password will be auto-generated if left blank.</span>
+        </div>
+        <button type="submit" class="btn btn-success">Create User</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+  <div class="card-header"><span class="card-title">User Accounts</span></div>
+  <div class="card-body" style="padding:0;">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="text-muted" style="font-size:.78rem;">{{ u.id }}</td>
+            <td class="fw-700 td-mono">{{ u.username }}</td>
+            <td>{{ u.full_name or '—' }}</td>
+            <td>
+              <span class="pill {% if u.role=='superadmin' %}pill-navy{% else %}pill-green{% endif %}">
+                {{ u.role|replace('superadmin','Super Admin')|title }}
+              </span>
+            </td>
+            <td>
+              <span class="pill {% if u.is_active %}pill-green{% else %}pill-gray{% endif %}">
+                {{ 'Active' if u.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td class="text-muted" style="font-size:.78rem;">{{ u.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              {% if u.id != current_user.id %}
+              <form method="POST" action="{{ url_for('toggle_user', uid=u.id) }}" style="margin:0;">
+                <button type="submit" class="btn btn-outline btn-sm">
+                  {{ 'Deactivate' if u.is_active else 'Activate' }}
+                </button>
+              </form>
+              {% else %}
+              <span class="text-muted" style="font-size:.75rem;">Current user</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}{{ school.name }} — Stoplight{% endblock %}
+{% block page_title %}School Detail{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>{{ school.name }}</h1>
+    <p>
+      <span class="td-mono">{{ school.unique_id }}</span>
+      {% if school.location %} &mdash; {{ school.location }}{% endif %}
+      &mdash; Registered {{ school.created_at.strftime('%d %b %Y') }}
+    </p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('register_school') }}" class="btn btn-success btn-sm">Add Members</a>
+    <a href="{{ url_for('print_school', school_id=school.id) }}" class="btn btn-navy btn-sm" target="_blank">Print Report</a>
+    {% if current_user.is_admin %}
+    <button class="btn btn-danger btn-sm" onclick="openModal('school-delete-modal')">Delete School</button>
+    {% endif %}
+    <a href="{{ url_for('list_schools') }}" class="btn btn-outline btn-sm">Back</a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid" style="grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); margin-bottom:20px;">
+  <div class="stat-card blue">
+    <div class="stat-label">Total Members</div>
+    <div class="stat-value">{{ members|length }}</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-label">Students</div>
+    <div class="stat-value">{{ members|selectattr('role','equalto','Student')|list|length }}</div>
+  </div>
+  <div class="stat-card navy">
+    <div class="stat-label">Teachers</div>
+    <div class="stat-value">{{ members|selectattr('role','equalto','Teacher')|list|length }}</div>
+  </div>
+  <div class="stat-card amber">
+    <div class="stat-label">Principals</div>
+    <div class="stat-value">{{ members|selectattr('role','equalto','Principal')|list|length }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Members</span>
+    <span class="text-muted" style="font-size:.78rem;">{{ members|length }} total</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if members %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Member ID</th>
+            <th>Full Name</th>
+            <th>Role</th>
+            <th>Area of Residence</th>
+            <th>Date of Birth</th>
+            <th>Phone</th>
+            <th>ID Card</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in members %}
+          <tr>
+            <td><span class="td-mono">{{ m.unique_id }}</span></td>
+            <td class="fw-700">{{ m.full_name }}</td>
+            <td>
+              <span class="pill {% if m.role=='Principal' %}pill-navy{% elif m.role=='Teacher' %}pill-blue{% elif m.role=='Student' %}pill-green{% else %}pill-gray{% endif %}">
+                {{ m.custom_role or m.role }}
+              </span>
+            </td>
+            <td>{{ m.area_of_residence or '—' }}</td>
+            <td class="text-muted" style="font-size:.78rem;">{{ m.date_of_birth.strftime('%d %b %Y') if m.date_of_birth else '—' }}</td>
+            <td>{{ m.phone or '—' }}</td>
+            <td>
+              <div class="d-flex gap-8">
+                <a href="{{ url_for('view_id_card', category='school', record_id=m.id) }}" class="btn btn-outline btn-sm">View</a>
+                <a href="{{ url_for('download_id_card_pdf', category='school', record_id=m.id) }}" class="btn btn-navy btn-sm">PDF</a>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="openModal('sm-del-{{ m.id }}')">Delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="es-title">No Members Yet</div>
+      <p>Add members to this school using the "Add Members" button.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Per-member delete modals -->
+{% for m in members %}
+<div class="modal-overlay" id="sm-del-{{ m.id }}">
+  <div class="modal-box">
+    <h3>Delete Member</h3>
+    <p>You are about to permanently delete:<br>
+      <span class="modal-name">{{ m.full_name }}</span>
+      &mdash; {{ m.custom_role or m.role }} ({{ m.unique_id }})
+    </p>
+    <div class="modal-warning">This action cannot be undone. The member record and QR code will be permanently removed.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('sm-del-{{ m.id }}')">Cancel</button>
+      <form method="POST" action="{{ url_for('delete_school_member', member_id=m.id) }}" style="margin:0;">
+        <button type="submit" class="btn btn-danger btn-sm">Confirm Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Delete entire school modal (admin only) -->
+{% if current_user.is_admin %}
+<div class="modal-overlay" id="school-delete-modal">
+  <div class="modal-box">
+    <h3>Delete Entire School</h3>
+    <p>You are about to permanently delete:<br>
+      <span class="modal-name">{{ school.name }}</span> along with all
+      <strong>{{ members|length }}</strong> member record(s).
+    </p>
+    <div class="modal-warning">
+      WARNING: This will delete the school and every member within it. This cannot be undone.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('school-delete-modal')">Cancel</button>
+      <form method="POST" action="{{ url_for('delete_school', school_id=school.id) }}" style="margin:0;">
+        <button type="submit" class="btn btn-danger">Delete School &amp; All Members</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+</script>
+{% endblock %}

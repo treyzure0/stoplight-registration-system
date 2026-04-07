@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Print — Individuals</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+body { background: white; }
+.print-header { text-align:center; padding: 24px; border-bottom: 2px solid #0a2342; margin-bottom: 20px; }
+.print-header h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; color: #0a2342; text-transform: uppercase; letter-spacing: .06em; }
+.print-controls { padding: 10px 20px; display: flex; gap: 10px; }
+@media print { .print-controls { display:none; } }
+</style>
+</head>
+<body>
+<div class="print-controls">
+  <button onclick="window.print()" class="btn btn-navy">Print</button>
+  <a href="{{ url_for('list_individuals') }}" class="btn btn-outline">Back</a>
+</div>
+<div class="print-header">
+  <h1>{{ company }}</h1>
+  <p>Individual Registrations Report</p>
+</div>
+<div style="padding: 0 24px;">
+  <table>
+    <thead>
+      <tr><th>#</th><th>Unique ID</th><th>Full Name</th><th>Occupation</th><th>Area of Residence</th><th>Date of Birth</th><th>Phone</th></tr>
+    </thead>
+    <tbody>
+      {% for ind in individuals %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><span class="td-mono">{{ ind.unique_id }}</span></td>
+        <td class="fw-700">{{ ind.full_name }}</td>
+        <td>{{ ind.occupation or '—' }}</td>
+        <td>{{ ind.area_of_residence or '—' }}</td>
+        <td>{{ ind.date_of_birth.strftime('%d %b %Y') if ind.date_of_birth else '—' }}</td>
+        <td>{{ ind.phone or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p style="margin-top:20px;font-size:.75rem;color:#9aa0a6;text-align:center;">Total: {{ individuals|length }} individual(s)</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}School Registration — Stoplight{% endblock %}
+{% block page_title %}School Registration{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>School Registration</h1>
+    <p>Register principals, teachers, students, and other school personnel</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('list_schools') }}" class="btn btn-outline btn-sm">View All Schools</a>
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('register_school') }}" id="schoolForm">
+
+  <!-- STEP 1: School Selection -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Step 1 — School Selection</span>
+    </div>
+    <div class="card-body">
+      <div class="toggle-options" style="max-width:360px; margin-bottom:20px;">
+        <input type="radio" name="action" id="opt_new" value="new" checked onchange="toggleSchoolMode('new')">
+        <label for="opt_new">Create New School</label>
+        <input type="radio" name="action" id="opt_existing" value="existing" onchange="toggleSchoolMode('existing')">
+        <label for="opt_existing">Select Existing School</label>
+      </div>
+
+      <!-- New School Fields -->
+      <div id="new_school_fields">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="school_name">School Name <span class="req">*</span></label>
+            <input type="text" id="school_name" name="school_name" placeholder="e.g. St. Mary's Primary School"
+                   oninput="checkDuplicate('school_name','school_name_warn')">
+            <span id="school_name_warn" class="form-hint text-red" style="display:none;">
+              A school with this name may already exist.
+            </span>
+          </div>
+          <div class="form-group">
+            <label for="school_location">School Location</label>
+            <input type="text" id="school_location" name="school_location" placeholder="Town, District">
+          </div>
+        </div>
+      </div>
+
+      <!-- Existing School Selection -->
+      <div id="existing_school_fields" style="display:none;">
+        <div class="form-group" style="max-width:440px;">
+          <label for="school_id">Select School <span class="req">*</span></label>
+          <select name="school_id" id="school_id">
+            <option value="">-- Choose a School --</option>
+            {% for school in schools %}
+            <option value="{{ school.id }}">{{ school.name }}{% if school.location %} — {{ school.location }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Members -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Step 2 — Add Members</span>
+      <button type="button" class="btn btn-success btn-sm" onclick="addMemberRow()">Add Another Member</button>
+    </div>
+    <div class="card-body">
+      <div class="member-rows" id="memberRows">
+        <!-- Row 1 -->
+        <div class="member-row" id="row_0">
+          <div class="member-row-header">
+            <span class="member-row-title">Member 1</span>
+            <button type="button" class="remove-row" onclick="removeRow(0)" style="visibility:hidden;">Remove</button>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Full Name <span class="req">*</span></label>
+              <input type="text" name="member_name[]" placeholder="Full name" required>
+            </div>
+            <div class="form-group">
+              <label>Role <span class="req">*</span></label>
+              <select name="member_role[]" onchange="toggleCustomRole(this)">
+                <option value="Principal">Principal</option>
+                <option value="Teacher">Teacher</option>
+                <option value="Resident Assistant">Resident Assistant</option>
+                <option value="Student" selected>Student</option>
+                <option value="Other">Other (specify)</option>
+              </select>
+            </div>
+            <div class="form-group custom-role-field" style="display:none;">
+              <label>Custom Role</label>
+              <input type="text" name="member_custom_role[]" placeholder="Specify role">
+            </div>
+            <div class="form-group">
+              <label>Area of Residence <span class="req">*</span></label>
+              <input type="text" name="member_area[]" placeholder="Town/Village" required>
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" name="member_dob[]">
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" name="member_phone[]" placeholder="+256...">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="d-flex gap-8" style="justify-content:flex-end; margin-top:4px;">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Cancel</a>
+    <button type="submit" class="btn btn-primary btn-lg">Save Registration</button>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let rowCount = 1;
+
+function toggleSchoolMode(mode) {
+  document.getElementById('new_school_fields').style.display = mode === 'new' ? '' : 'none';
+  document.getElementById('existing_school_fields').style.display = mode === 'existing' ? '' : 'none';
+  document.getElementById('school_name').required = (mode === 'new');
+  document.getElementById('school_id').required = (mode === 'existing');
+}
+
+function addMemberRow() {
+  const idx = rowCount++;
+  const container = document.getElementById('memberRows');
+  const row = document.createElement('div');
+  row.className = 'member-row';
+  row.id = `row_${idx}`;
+  row.innerHTML = `
+    <div class="member-row-header">
+      <span class="member-row-title">Member ${idx + 1}</span>
+      <button type="button" class="remove-row" onclick="removeRow(${idx})">Remove</button>
+    </div>
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" name="member_name[]" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label>Role <span class="req">*</span></label>
+        <select name="member_role[]" onchange="toggleCustomRole(this)">
+          <option value="Principal">Principal</option>
+          <option value="Teacher">Teacher</option>
+          <option value="Resident Assistant">Resident Assistant</option>
+          <option value="Student" selected>Student</option>
+          <option value="Other">Other (specify)</option>
+        </select>
+      </div>
+      <div class="form-group custom-role-field" style="display:none;">
+        <label>Custom Role</label>
+        <input type="text" name="member_custom_role[]" placeholder="Specify role">
+      </div>
+      <div class="form-group">
+        <label>Area of Residence <span class="req">*</span></label>
+        <input type="text" name="member_area[]" placeholder="Town/Village">
+      </div>
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <input type="date" name="member_dob[]">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" name="member_phone[]" placeholder="+256...">
+      </div>
+    </div>`;
+  container.appendChild(row);
+  // Show remove button on first row once more rows exist
+  document.querySelector('#row_0 .remove-row').style.visibility = 'visible';
+}
+
+function removeRow(idx) {
+  const row = document.getElementById(`row_${idx}`);
+  if (row) row.remove();
+  const rows = document.querySelectorAll('.member-row');
+  if (rows.length === 1) {
+    rows[0].querySelector('.remove-row').style.visibility = 'hidden';
+  }
+}
+
+function toggleCustomRole(sel) {
+  const custom = sel.closest('.form-grid-3').querySelector('.custom-role-field');
+  if (custom) custom.style.display = sel.value === 'Other' ? '' : 'none';
+}
+
+let dupTimeout;
+function checkDuplicate(inputId, warnId) {
+  clearTimeout(dupTimeout);
+  dupTimeout = setTimeout(() => {
+    const val = document.getElementById(inputId).value.trim();
+    if (!val) return;
+    fetch(`/api/schools?q=${encodeURIComponent(val)}`)
+      .then(r => r.json())
+      .then(data => {
+        const exact = data.find(s => s.name.toLowerCase() === val.toLowerCase());
+        document.getElementById(warnId).style.display = exact ? '' : 'none';
+      });
+  }, 400);
+}
+</script>
+{% endblock %}
