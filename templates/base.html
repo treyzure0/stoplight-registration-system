@@ -6,11 +6,15 @@
   <title>{% block title %}Stoplight Registration System{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
   {% block head %}{% endblock %}
 </head>
 <body>
+
+<!-- Dark overlay — tapping it closes the sidebar on mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
 <div class="app-wrapper">
 
   <!-- SIDEBAR -->
@@ -18,8 +22,11 @@
     <div class="sidebar-brand">
       <div class="brand-name">{{ company }}</div>
       <div class="brand-sub">Registration System</div>
+      <!-- X button only visible on mobile -->
+      <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
     </div>
 
+    <!-- nav is scrollable -->
     <nav class="sidebar-nav">
       <div class="nav-section-label">Overview</div>
       <a href="{{ url_for('dashboard') }}" class="nav-item {% if page=='dashboard' %}active{% endif %}">Dashboard</a>
@@ -53,19 +60,30 @@
           <div class="user-role">{{ current_user.role|replace('superadmin','Super Admin')|title }}</div>
         </div>
       </div>
-      <a href="{{ url_for('logout') }}" class="logout-link">Sign Out</a>
+      <!-- Prominent logout button -->
+      <a href="{{ url_for('logout') }}" class="logout-btn">Sign Out</a>
     </div>
   </aside>
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
     <header class="top-header">
+      <!-- Hamburger: only shows on mobile -->
+      <button class="hamburger-btn" id="hamburgerBtn" onclick="openSidebar()" aria-label="Open menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
       <div class="header-title">{% block page_title %}{% endblock %}</div>
+
       <div class="header-meta">
         <span class="header-date" id="headerDate"></span>
         <span class="header-badge {% if current_user.is_admin %}badge-admin{% else %}badge-staff{% endif %}">
           {{ current_user.role|replace('superadmin','Super Admin')|title }}
         </span>
+        <!-- Mobile logout in header (sidebar may be hidden on mobile) -->
+        <a href="{{ url_for('logout') }}" class="header-logout-btn">Sign Out</a>
       </div>
     </header>
 
@@ -94,17 +112,47 @@
   function updateDate() {
     const now = new Date();
     const opts = { weekday:'short', year:'numeric', month:'short', day:'numeric' };
-    document.getElementById('headerDate').textContent = now.toLocaleDateString('en-GB', opts);
+    const el = document.getElementById('headerDate');
+    if (el) el.textContent = now.toLocaleDateString('en-GB', opts);
   }
   updateDate();
   setInterval(updateDate, 60000);
 
   // Auto-dismiss alerts after 6 seconds
   setTimeout(() => {
-    document.querySelectorAll('.alert').forEach(a => a.style.opacity = '0');
+    document.querySelectorAll('.alert').forEach(a => {
+      a.style.transition = 'opacity .4s';
+      a.style.opacity = '0';
+    });
     setTimeout(() => document.querySelectorAll('.alert').forEach(a => a.remove()), 400);
   }, 6000);
+
+  // Sidebar open / close (mobile)
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Close on ESC key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  // Auto-close sidebar when a nav link is tapped on mobile
+  document.querySelectorAll('.sidebar .nav-item').forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (window.innerWidth < 769) closeSidebar();
+    });
+  });
 </script>
+
 {% block scripts %}{% endblock %}
 </body>
 </html>
