@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Families — Stoplight{% endblock %}
+{% block page_title %}Families{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>All Families</h1>
+    <p>{{ families|length }} family unit(s) registered</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('register_family') }}" class="btn btn-primary btn-sm">Register Family</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Family Registry</span>
+    <form method="GET" class="search-bar" style="margin:0;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search family name...">
+      <button type="submit" class="btn btn-navy btn-sm">Search</button>
+      {% if q %}<a href="{{ url_for('list_families') }}" class="btn btn-outline btn-sm">Clear</a>{% endif %}
+    </form>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if families %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Family ID</th>
+            <th>Family Name</th>
+            <th>Area of Residence</th>
+            <th>Members</th>
+            <th>Registered</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fam in families %}
+          <tr>
+            <td><span class="td-mono">{{ fam.unique_id }}</span></td>
+            <td class="fw-700">{{ fam.family_name }} Family</td>
+            <td>{{ fam.area_of_residence or '—' }}</td>
+            <td><span class="pill pill-green">{{ fam.members|length }} member(s)</span></td>
+            <td class="text-muted" style="font-size:.78rem;">{{ fam.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div class="d-flex gap-8">
+                <a href="{{ url_for('view_family', family_id=fam.id) }}" class="btn btn-outline btn-sm">View</a>
+                <a href="{{ url_for('print_family', family_id=fam.id) }}" class="btn btn-navy btn-sm" target="_blank">Print</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="es-title">No Families Registered</div>
+      <p>{% if q %}No families match "{{ q }}".{% else %}Register families to see them here.{% endif %}</p>
+      <a href="{{ url_for('register_family') }}" class="btn btn-primary btn-sm">Register Family</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

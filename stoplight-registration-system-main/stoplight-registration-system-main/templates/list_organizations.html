@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Organizations — Stoplight{% endblock %}
+{% block page_title %}Organizations{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>All Organizations</h1>
+    <p>{{ orgs|length }} organization(s) registered</p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('register_organization') }}" class="btn btn-primary btn-sm">Register Organization</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Organization Registry</span>
+    <form method="GET" class="search-bar" style="margin:0;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search organization...">
+      <button type="submit" class="btn btn-navy btn-sm">Search</button>
+      {% if q %}<a href="{{ url_for('list_organizations') }}" class="btn btn-outline btn-sm">Clear</a>{% endif %}
+    </form>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if orgs %}
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Org ID</th>
+            <th>Organization Name</th>
+            <th>Location / Area</th>
+            <th>Members</th>
+            <th>Registered</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for org in orgs %}
+          <tr>
+            <td><span class="td-mono">{{ org.unique_id }}</span></td>
+            <td class="fw-700">{{ org.name }}</td>
+            <td>{{ org.area_of_residence or '—' }}</td>
+            <td><span class="pill pill-amber">{{ org.members|length }} member(s)</span></td>
+            <td class="text-muted" style="font-size:.78rem;">{{ org.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div class="d-flex gap-8">
+                <a href="{{ url_for('view_organization', org_id=org.id) }}" class="btn btn-outline btn-sm">View</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="es-title">No Organizations Registered</div>
+      <p>{% if q %}No organizations match "{{ q }}".{% else %}Register organizations to see them here.{% endif %}</p>
+      <a href="{{ url_for('register_organization') }}" class="btn btn-primary btn-sm">Register Organization</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
