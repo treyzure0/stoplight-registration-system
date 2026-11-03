@@ -1,1 +1,0 @@
-﻿# stoplight-registration-system
