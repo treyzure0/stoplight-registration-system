@@ -30,7 +30,6 @@
           <tr>
             <th>Family ID</th>
             <th>Family Name</th>
-            <th>Area of Residence</th>
             <th>Members</th>
             <th>Registered</th>
             <th>Actions</th>
@@ -41,7 +40,6 @@
           <tr>
             <td><span class="td-mono">{{ fam.unique_id }}</span></td>
             <td class="fw-700">{{ fam.family_name }} Family</td>
-            <td>{{ fam.area_of_residence or '—' }}</td>
             <td><span class="pill pill-green">{{ fam.members|length }} member(s)</span></td>
             <td class="text-muted" style="font-size:.78rem;">{{ fam.created_at.strftime('%d %b %Y') }}</td>
             <td>

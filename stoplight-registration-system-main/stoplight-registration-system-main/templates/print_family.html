@@ -25,7 +25,7 @@ body { background: white; }
 <div style="padding: 0 24px;">
   <table>
     <thead>
-      <tr><th>#</th><th>Member ID</th><th>Full Name</th><th>Role</th><th>Area of Residence</th><th>Email</th></tr>
+      <tr><th>#</th><th>Member ID</th><th>Full Name</th><th>Role</th><th>Email</th><th>Phone</th></tr>
     </thead>
     <tbody>
       {% for m in members %}
@@ -34,8 +34,8 @@ body { background: white; }
         <td><span class="td-mono">{{ m.unique_id }}</span></td>
         <td class="fw-700">{{ m.full_name }}</td>
         <td>{{ m.role }}</td>
-        <td>{{ m.area_of_residence or '—' }}</td>
         <td>{{ m.email or '—' }}</td>
+        <td>{{ m.phone or '—' }}</td>
       </tr>
       {% endfor %}
     </tbody>

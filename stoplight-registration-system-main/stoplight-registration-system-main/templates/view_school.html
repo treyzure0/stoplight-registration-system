@@ -56,8 +56,8 @@
             <th>Member ID</th>
             <th>Full Name</th>
             <th>Role</th>
-            <th>Area of Residence</th>
             <th>Email</th>
+            <th>Phone</th>
             <th>ID Card</th>
             <th>Action</th>
           </tr>
@@ -72,8 +72,8 @@
                 {{ m.custom_role or m.role }}
               </span>
             </td>
-            <td>{{ m.area_of_residence or '—' }}</td>
             <td>{{ m.email or '—' }}</td>
+            <td>{{ m.phone or '—' }}</td>
             <td>
               <div class="d-flex gap-8">
                 <a href="{{ url_for('view_id_card', category='school', record_id=m.id) }}" class="btn btn-outline btn-sm">View</a>

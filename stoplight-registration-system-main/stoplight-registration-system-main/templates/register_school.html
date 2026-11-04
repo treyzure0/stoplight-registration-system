@@ -95,12 +95,12 @@
               <input type="text" name="member_custom_role[]" placeholder="Specify role">
             </div>
             <div class="form-group">
-              <label>Area of Residence <span class="req">*</span></label>
-              <input type="text" name="member_area[]" placeholder="Town/Village" required>
-            </div>
-            <div class="form-group">
               <label>Email Address</label>
               <input type="email" name="member_email[]" placeholder="email@example.com">
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="tel" name="member_phone[]" placeholder="+256...">
             </div>
           </div>
         </div>
@@ -159,12 +159,12 @@ function addMemberRow() {
         <input type="text" name="member_custom_role[]" placeholder="Specify role">
       </div>
       <div class="form-group">
-        <label>Area of Residence <span class="req">*</span></label>
-        <input type="text" name="member_area[]" placeholder="Town/Village">
-      </div>
-      <div class="form-group">
         <label>Email Address</label>
         <input type="email" name="member_email[]" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" name="member_phone[]" placeholder="+256...">
       </div>
     </div>`;
   container.appendChild(row);

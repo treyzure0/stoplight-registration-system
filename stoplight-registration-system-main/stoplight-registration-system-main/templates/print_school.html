@@ -33,8 +33,8 @@ body { background: white; margin: 0; }
         <th>Member ID</th>
         <th>Full Name</th>
         <th>Role</th>
-        <th>Area of Residence</th>
         <th>Email</th>
+        <th>Phone</th>
       </tr>
     </thead>
     <tbody>
@@ -44,8 +44,8 @@ body { background: white; margin: 0; }
         <td><span class="td-mono">{{ m.unique_id }}</span></td>
         <td class="fw-700">{{ m.full_name }}</td>
         <td>{{ m.custom_role or m.role }}</td>
-        <td>{{ m.area_of_residence or '—' }}</td>
         <td>{{ m.email or '—' }}</td>
+        <td>{{ m.phone or '—' }}</td>
       </tr>
       {% endfor %}
     </tbody>

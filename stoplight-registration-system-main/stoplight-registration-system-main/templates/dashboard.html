@@ -134,7 +134,7 @@
             <th>Full Name</th>
             <th>Category</th>
             <th>Role / Occupation</th>
-            <th>Area of Residence</th>
+            <th>Email</th>
             <th>Registered</th>
           </tr>
         </thead>
@@ -149,7 +149,7 @@
               </span>
             </td>
             <td>{{ r.role }}</td>
-            <td>{{ r.area or '—' }}</td>
+            <td>{{ r.email or '—' }}</td>
             <td class="text-muted" style="font-size:.78rem;">{{ r.date }}</td>
           </tr>
           {% endfor %}

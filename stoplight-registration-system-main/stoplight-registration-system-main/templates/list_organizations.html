@@ -30,7 +30,6 @@
           <tr>
             <th>Org ID</th>
             <th>Organization Name</th>
-            <th>Location / Area</th>
             <th>Members</th>
             <th>Registered</th>
             <th>Actions</th>
@@ -41,7 +40,6 @@
           <tr>
             <td><span class="td-mono">{{ org.unique_id }}</span></td>
             <td class="fw-700">{{ org.name }}</td>
-            <td>{{ org.area_of_residence or '—' }}</td>
             <td><span class="pill pill-amber">{{ org.members|length }} member(s)</span></td>
             <td class="text-muted" style="font-size:.78rem;">{{ org.created_at.strftime('%d %b %Y') }}</td>
             <td>

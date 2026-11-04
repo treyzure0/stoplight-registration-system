@@ -32,8 +32,8 @@
             <th>Unique ID</th>
             <th>Full Name</th>
             <th>Occupation</th>
-            <th>Area of Residence</th>
             <th>Email</th>
+            <th>Phone</th>
             <th>ID Card</th>
             <th>Action</th>
           </tr>
@@ -44,8 +44,8 @@
             <td><span class="td-mono">{{ ind.unique_id }}</span></td>
             <td class="fw-700">{{ ind.full_name }}</td>
             <td>{{ ind.occupation or '—' }}</td>
-            <td>{{ ind.area_of_residence or '—' }}</td>
             <td>{{ ind.email or '—' }}</td>
+            <td>{{ ind.phone or '—' }}</td>
             <td>
               <div class="d-flex gap-8">
                 <a href="{{ url_for('view_id_card', category='individual', record_id=ind.id) }}" class="btn btn-outline btn-sm">View</a>

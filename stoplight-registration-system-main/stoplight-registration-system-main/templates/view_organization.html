@@ -6,7 +6,7 @@
 <div class="page-header">
   <div class="page-header-left">
     <h1>{{ org.name }}</h1>
-    <p><span class="td-mono">{{ org.unique_id }}</span>{% if org.area_of_residence %} &mdash; {{ org.area_of_residence }}{% endif %}</p>
+    <p><span class="td-mono">{{ org.unique_id }}</span></p>
   </div>
   <div class="page-actions">
     <a href="{{ url_for('register_organization') }}" class="btn btn-success btn-sm">Add Members</a>
@@ -31,8 +31,8 @@
             <th>Member ID</th>
             <th>Full Name</th>
             <th>Role</th>
-            <th>Area of Residence</th>
             <th>Email</th>
+            <th>Phone</th>
             <th>ID Card</th>
             <th>Action</th>
           </tr>
@@ -43,8 +43,8 @@
             <td><span class="td-mono">{{ m.unique_id }}</span></td>
             <td class="fw-700">{{ m.full_name }}</td>
             <td>{{ m.role or '—' }}</td>
-            <td>{{ m.area_of_residence or '—' }}</td>
             <td>{{ m.email or '—' }}</td>
+            <td>{{ m.phone or '—' }}</td>
             <td>
               <div class="d-flex gap-8">
                 <a href="{{ url_for('view_id_card', category='org', record_id=m.id) }}" class="btn btn-outline btn-sm">View</a>
